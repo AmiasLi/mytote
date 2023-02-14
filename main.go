@@ -1,7 +1,10 @@
 package main
 
-import "github.com/AmiasLi/mytote/server"
+import (
+	"github.com/AmiasLi/mytote/cmd"
+)
 
 func main() {
-	server.BackupCron()
+	//server.BackupCron()
+	cmd.Execute()
 }

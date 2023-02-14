@@ -68,7 +68,7 @@ func NewLogContents(errMessage string, backupStatus string, startTime time.Time,
 	duration string, backupFile string, backupSize int64) *LogContents {
 	logContentsObj := LogContents{
 		HostName:     utils.GetHostName(),
-		IP:           config.Conf.IP,
+		IP:           config.Conf.Host,
 		Port:         config.Conf.Port,
 		BackupType:   config.Conf.BackupType,
 		StartTime:    startTime,
