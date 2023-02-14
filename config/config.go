@@ -1,55 +1,64 @@
-package config
+package main
 
-import "github.com/spf13/viper"
+import (
+	"fmt"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
+)
 
-type config struct {
-	Host             string
-	User             string
-	Password         string
-	BackupHour       int
-	BackupMin        int
-	Port             int
-	Socket           string
-	BackupDir        string
-	BackupLog        string
-	BackupRetain     string
-	MysqlLogUser     string
-	MysqlLogPassword string
-	MysqlLogPort     int
-	MysqlLogHost     string
-	MysqlLogDb       string
-	MysqlLogTable    string
-	BackupType       string
-	ReserveSpace     int64
-	RetryDuration    int
-	Compress         bool
-	CompressThreads  int
+type Config struct {
+	BackupServer   BackupServer   `yaml:"backup_server"`
+	LogMySQLServer LogMySQLServer `yaml:"mysql_log"`
 }
 
-var Conf *config
+type BackupServer struct {
+	Host            string `yaml:"host"`
+	Port            int    `yaml:"port"`
+	Socket          string `yaml:"socket"`
+	User            string `yaml:"user"`
+	Password        string `yaml:"password"`
+	BackupType      string `yaml:"backup_type"`
+	Compress        bool   `yaml:"compress"`
+	CompressThreads int    `yaml:"compress_threads"`
+	BackupHour      int    `yaml:"backup_hour"`
+	BackupMin       int    `yaml:"backup_minute"`
+	RetryDuration   int    `yaml:"retry_duration"`
+	BackupRetain    string `yaml:"backup_retain"`
+	BackupDir       string `yaml:"backup_dir"`
+	BackupLog       string `yaml:"backup_log"`
+	ReserveSpace    int64  `yaml:"reserve_space"`
+}
 
-func GetConfig() {
-	Conf = &config{
-		User:             viper.Get("server_backup.user").(string),
-		Password:         viper.Get("server_backup.password").(string),
-		BackupHour:       viper.Get("server_backup.backup_hour").(int),
-		BackupMin:        viper.Get("server_backup.backup_min").(int),
-		Port:             viper.Get("server_backup.port").(int),
-		Socket:           viper.Get("server_backup.socket").(string),
-		BackupDir:        viper.Get("server_backup.backup_dir").(string),
-		BackupLog:        viper.Get("server_backup.backup_log").(string),
-		BackupRetain:     viper.Get("server_backup.backup_retain").(string),
-		MysqlLogUser:     viper.Get("server_backup.mysql_log_user").(string),
-		MysqlLogPassword: viper.Get("server_backup.mysql_log_password").(string),
-		MysqlLogPort:     viper.Get("server_backup.mysql_log_port").(int),
-		MysqlLogHost:     viper.Get("server_backup.mysql_log_host").(string),
-		MysqlLogDb:       viper.Get("server_backup.mysql_log_db").(string),
-		MysqlLogTable:    viper.Get("server_backup.mysql_log_table").(string),
-		BackupType:       viper.Get("server_backup.backup_type").(string),
-		ReserveSpace:     viper.Get("server_backup.reserve_space").(int64) * 1024 * 1024 * 1024,
-		RetryDuration:    viper.Get("server_backup.retry_duration").(int),
-		Host:             viper.Get("server_backup.host").(string),
-		Compress:         viper.Get("server_backup.compress").(bool),
-		CompressThreads:  viper.Get("server_backup.compress_threads").(int),
+type LogMySQLServer struct {
+	MysqlLogHost     string `yaml:"host"`
+	MysqlLogPort     string `yaml:"port"`
+	MysqlLogUser     string `yaml:"user"`
+	MysqlLogPassword string `yaml:"password"`
+	MysqlLogDb       string `yaml:"db"`
+	MysqlLogTable    string `yaml:"table"`
+}
+
+var Conf Config
+var logMySQLServer *LogMySQLServer
+
+func main() {
+	viper := viper.New()
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(".")
+
+	viper.AutomaticEnv()
+
+	if viper.ReadInConfig() != nil {
+		logrus.Error("config file not found")
+	} else {
+		logrus.Info("Using config file:", viper.ConfigFileUsed())
+		//fmt.Println(viper.Get("backup_server"))
+		err := viper.Unmarshal(&logMySQLServer)
+		fmt.Println(logMySQLServer)
+
+		if err != nil {
+			logrus.Error("unable to decode into struct, %v", err)
+		}
 	}
 }
