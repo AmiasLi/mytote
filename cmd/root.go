@@ -1,7 +1,8 @@
 package cmd
 
 import (
-	"fmt"
+	"github.com/AmiasLi/mytote/config"
+	"github.com/AmiasLi/mytote/logs"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -11,7 +12,8 @@ var (
 	rootCmd = &cobra.Command{
 		Use:   "mytote",
 		Short: "mytote is backup Cron",
-		Long: "mytote is backup Cron for your MySQL using xtrabackup, " +
+		Long: "mytote is backup Cron for your MySQL " +
+			"using xtrabackup, " +
 			"and manage backup file.",
 	}
 )
@@ -22,11 +24,12 @@ func Execute() error {
 
 func init() {
 	cobra.OnInitialize(initConfig)
+	cobra.OnInitialize(config.GetConfig)
+	cobra.OnInitialize(logs.InitLog)
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file(default ./config.yaml)")
-	rootCmd.PersistentFlags().Bool("viper", true, "use Viper for configuration")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "",
+		"config file(default ./config.yaml)")
 
-	// default config value
 	configDefault()
 
 	rootCmd.AddCommand(versionCmd)
@@ -56,14 +59,7 @@ func initConfig() {
 	} else {
 		viper.SetConfigName("config")
 		viper.SetConfigType("yaml")
-
-		// optionally look for config in the working directory
 		viper.AddConfigPath(".")
 	}
-
 	viper.AutomaticEnv()
-
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
-	}
 }

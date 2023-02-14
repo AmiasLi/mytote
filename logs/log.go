@@ -96,7 +96,3 @@ func InitLog() {
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	logrus.SetOutput(io.MultiWriter(f))
 }
-
-func init() {
-	InitLog()
-}

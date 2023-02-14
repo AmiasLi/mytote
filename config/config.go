@@ -1,9 +1,6 @@
 package config
 
-import (
-	"github.com/go-ini/ini"
-	"github.com/sirupsen/logrus"
-)
+import "github.com/spf13/viper"
 
 type config struct {
 	Host             string
@@ -22,7 +19,6 @@ type config struct {
 	MysqlLogHost     string
 	MysqlLogDb       string
 	MysqlLogTable    string
-	IP               string
 	BackupType       string
 	ReserveSpace     int64
 	RetryDuration    int
@@ -32,69 +28,28 @@ type config struct {
 
 var Conf *config
 
-func readConfig() {
-	// Read the config file
-
-	cfg, err := ini.Load("config.ini")
-
-	if err != nil {
-		logrus.Fatalf("Error opening config file: %s\n", err)
-	}
-
-	// Read the values from the INI file
-	user := cfg.Section("server_backup").Key("user").String()
-	password := cfg.Section("server_backup").Key("password").String()
-	backupRetain := cfg.Section("server_backup").Key("backup_retain").MustString("2")
-	port := cfg.Section("server_backup").Key("port").MustInt(3306)
-	backupLog := cfg.Section("server_backup").Key("backup_log").MustString("./backup.log")
-	backupHour := cfg.Section("server_backup").Key("backup_hour").MustInt(0)
-	backupMin := cfg.Section("server_backup").Key("backup_minute").MustInt(0)
-	socket := cfg.Section("server_backup").Key("socket").String()
-	backupDir := cfg.Section("server_backup").Key("backup_dir").MustString("./")
-	mysqlLogUser := cfg.Section("mysql_log").Key("mysql_log_user").String()
-	mysqlLogPassword := cfg.Section("mysql_log").Key("mysql_log_password").String()
-	mysqlLogPort := cfg.Section("mysql_log").Key("mysql_log_port").MustInt(3306)
-	mysqlLogHost := cfg.Section("mysql_log").Key("mysql_log_host").String()
-	mysqlLogDb := cfg.Section("mysql_log").Key("mysql_log_db").String()
-	mysqlLogTable := cfg.Section("mysql_log").Key("mysql_log_table").String()
-	ip := cfg.Section("server_backup").Key("host").MustString("127.0.0.1")
-	backupType := cfg.Section("server_backup").Key("backup_type").MustString("full")
-	reserveSpace := cfg.Section("server_backup").Key("reserve_space").MustInt64(5)
-	retryDuration := cfg.Section("server_backup").Key("retry_duration").MustInt(15)
-	host := cfg.Section("server_backup").Key("host").MustString("127.0.0.1")
-	compress := cfg.Section("server_backup").Key("compress").MustBool(true)
-	compressThreads := cfg.Section("server_backup").Key("compress_threads").MustInt(1)
-
-	if user == "" || password == "" {
-		logrus.Fatalf("Error reading user or password from config file")
-	}
-
+func GetConfig() {
 	Conf = &config{
-		User:             user,
-		Password:         password,
-		BackupHour:       backupHour,
-		BackupMin:        backupMin,
-		Port:             port,
-		Socket:           socket,
-		BackupDir:        backupDir,
-		BackupLog:        backupLog,
-		BackupRetain:     backupRetain,
-		MysqlLogUser:     mysqlLogUser,
-		MysqlLogPassword: mysqlLogPassword,
-		MysqlLogPort:     mysqlLogPort,
-		MysqlLogHost:     mysqlLogHost,
-		MysqlLogDb:       mysqlLogDb,
-		MysqlLogTable:    mysqlLogTable,
-		IP:               ip,
-		BackupType:       backupType,
-		ReserveSpace:     reserveSpace * 1024 * 1024 * 1024,
-		RetryDuration:    retryDuration,
-		Host:             host,
-		Compress:         compress,
-		CompressThreads:  compressThreads,
+		User:             viper.Get("server_backup.user").(string),
+		Password:         viper.Get("server_backup.password").(string),
+		BackupHour:       viper.Get("server_backup.backup_hour").(int),
+		BackupMin:        viper.Get("server_backup.backup_min").(int),
+		Port:             viper.Get("server_backup.port").(int),
+		Socket:           viper.Get("server_backup.socket").(string),
+		BackupDir:        viper.Get("server_backup.backup_dir").(string),
+		BackupLog:        viper.Get("server_backup.backup_log").(string),
+		BackupRetain:     viper.Get("server_backup.backup_retain").(string),
+		MysqlLogUser:     viper.Get("server_backup.mysql_log_user").(string),
+		MysqlLogPassword: viper.Get("server_backup.mysql_log_password").(string),
+		MysqlLogPort:     viper.Get("server_backup.mysql_log_port").(int),
+		MysqlLogHost:     viper.Get("server_backup.mysql_log_host").(string),
+		MysqlLogDb:       viper.Get("server_backup.mysql_log_db").(string),
+		MysqlLogTable:    viper.Get("server_backup.mysql_log_table").(string),
+		BackupType:       viper.Get("server_backup.backup_type").(string),
+		ReserveSpace:     viper.Get("server_backup.reserve_space").(int64) * 1024 * 1024 * 1024,
+		RetryDuration:    viper.Get("server_backup.retry_duration").(int),
+		Host:             viper.Get("server_backup.host").(string),
+		Compress:         viper.Get("server_backup.compress").(bool),
+		CompressThreads:  viper.Get("server_backup.compress_threads").(int),
 	}
-}
-
-func init() {
-	readConfig()
 }

@@ -16,7 +16,7 @@ type ConnString struct {
 	Db       string
 }
 
-var stringLogServer ConnString = ConnString{
+var stringLogServer = ConnString{
 	Host:     config.Conf.MysqlLogHost,
 	Port:     config.Conf.MysqlLogPort,
 	User:     config.Conf.MysqlLogUser,
@@ -24,8 +24,8 @@ var stringLogServer ConnString = ConnString{
 	Db:       config.Conf.MysqlLogDb,
 }
 
-var stringBackupServer ConnString = ConnString{
-	Host:     "127.0.0.1",
+var stringBackupServer = ConnString{
+	Host:     config.Conf.Host,
 	Port:     config.Conf.Port,
 	User:     config.Conf.User,
 	Password: config.Conf.Password,
