@@ -35,7 +35,7 @@ func LogToMySQL(contents *LogContents) {
 	}
 
 	// Insert the log into the MySQL database
-	stmt, err := DbObj.Prepare("insert into" + config.Conf.MysqlLogTable +
+	stmt, err := DbObj.Prepare("insert into" + " " + config.Conf.MysqlLogTable +
 		" (" + "host_name, " +
 		"ip, port, backup_type, " +
 		"backup_file, backup_size," +
