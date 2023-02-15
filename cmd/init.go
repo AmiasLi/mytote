@@ -17,12 +17,12 @@ var (
 )
 
 func init() {
-	cobra.OnInitialize(initConfig)
-
+	// cobra.OnInitialize(initConfig)
 	// default configration
-	configDefault()
-
 	cobra.OnInitialize(func() {
+		initConfig()
+		configDefault()
+		Conf.BpServer.LogTable = Conf.LogMySQL.Table
 		logs.InitLog(Conf.BpServer.BackupLog)
 		InitMySQL()
 	})
