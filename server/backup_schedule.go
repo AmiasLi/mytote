@@ -13,18 +13,18 @@ import (
 
 func (s *BpServer) ServerBackupProcess() error {
 	// Create a new backup server
-	HostName := utils.GetHostName()
-	bpServer := NewBpServer(HostName, s.Port)
-	bpServer.StartTime = time.Now()
-	bpServer.EndTime = time.Now()
+	s.HostName = utils.GetHostName()
+
+	s.StartTime = time.Now()
+	s.EndTime = time.Now()
 
 	// Check if the server is online
-	online, err := bpServer.GetServerStatus()
+	online, err := s.GetServerStatus()
 	if err != nil {
 		logrus.Errorf("can not connect to backup server[%s:%d] : %s", s.Host, s.Port, err)
 		LogContentsObj := logs.NewLogContents(err.Error(), "ERROR",
-			bpServer.StartTime, time.Now(),
-			fmt.Sprintf("%v", time.Now().Sub(bpServer.StartTime)),
+			s.StartTime, time.Now(),
+			fmt.Sprintf("%v", time.Now().Sub(s.StartTime)),
 			"", 0, s.Host, s.Port, s.BackupType)
 
 		logs.LogToMySQL(LogContentsObj, s.LogTable)
@@ -36,35 +36,36 @@ func (s *BpServer) ServerBackupProcess() error {
 		logrus.Errorf("xtrabackup not found: %s\n", err)
 
 		LogContentsObj := logs.NewLogContents(err.Error(), "ERROR",
-			bpServer.StartTime, time.Now(),
-			fmt.Sprintf("%v", time.Now().Sub(bpServer.StartTime)),
+			s.StartTime, time.Now(),
+			fmt.Sprintf("%v", time.Now().Sub(s.StartTime)),
 			"", 0, s.Host, s.Port, s.BackupType)
 
 		logs.LogToMySQL(LogContentsObj, s.LogTable)
 		return err
 	}
 
-	spaceAllow, err := bpServer.SpaceAllow()
+	spaceAllow, err := s.SpaceAllow()
+
 	if err != nil {
-		logrus.Errorf("Error checking disk space: %s\n", err)
+		logrus.Errorf("error checking free disk: %s\n", err)
 
 		LogContentsObj := logs.NewLogContents(err.Error(), "ERROR",
-			bpServer.StartTime, time.Now(),
-			fmt.Sprintf("%v", time.Now().Sub(bpServer.StartTime)),
+			s.StartTime, time.Now(),
+			fmt.Sprintf("%v", time.Now().Sub(s.StartTime)),
 			"", 0, s.Host, s.Port, s.BackupType)
 
 		logs.LogToMySQL(LogContentsObj, s.LogTable)
 		return err
 	}
 
-	if TarGetDirectory, err := bpServer.GenSubPath(); err == nil {
-		bpServer.SubDataPath = TarGetDirectory
+	if TarGetDirectory, err := s.GenSubPath(); err == nil {
+		s.SubDataPath = TarGetDirectory
 	} else {
 		logrus.Errorf("Error creating backup directory: %s\n", err)
 
 		LogContentsObj := logs.NewLogContents(err.Error(), "ERROR",
-			bpServer.StartTime, time.Now(),
-			fmt.Sprintf("%v", time.Now().Sub(bpServer.StartTime)),
+			s.StartTime, time.Now(),
+			fmt.Sprintf("%v", time.Now().Sub(s.StartTime)),
 			"", 0, s.Host, s.Port, s.BackupType)
 
 		logs.LogToMySQL(LogContentsObj, s.LogTable)
@@ -72,16 +73,16 @@ func (s *BpServer) ServerBackupProcess() error {
 		return err
 	}
 
-	if online && xtrExec != "" && bpServer.SubDataPath != "" && spaceAllow {
+	if online && xtrExec != "" && s.SubDataPath != "" && spaceAllow {
 		// Run the backup
-		bpServer.XtrBin = xtrExec
-		err := bpServer.Backup()
+		s.XtrBin = xtrExec
+		err := s.Backup()
 		if err != nil {
 			logrus.Errorf("Error running backup: %s\n", err)
-			logrus.Infof("Retrying afer %d.\n", bpServer.RetryDuration)
-			time.Sleep(time.Duration(bpServer.RetryDuration) * time.Minute)
+			logrus.Infof("Retrying afer %d.\n", s.RetryDuration)
+			time.Sleep(time.Duration(s.RetryDuration) * time.Minute)
 
-			err := bpServer.Backup()
+			err := s.Backup()
 			if err != nil {
 				logrus.Errorf("Error running backup again: %s\n", err)
 				return err

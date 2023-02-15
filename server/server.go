@@ -12,38 +12,30 @@ import (
 )
 
 type BpServer struct {
-	HostName          string
-	Host              string `mapstructure:"host"`
-	Port              int    `mapstructure:"port"`
-	Socket            string `mapstructure:"socket"`
-	User              string `mapstructure:"user"`
-	Password          string `mapstructure:"password"`
-	BakcupMethod      string `mapstructure:"backup_method"`
-	BackupType        string `mapstructure:"backup_type"`
-	Compress          bool   `mapstructure:"compress"`
-	CompressThreads   int    `mapstructure:"compress_threads"`
-	BackupFullWeekday int    `mapstructure:"backup_full_weekday"`
-	BackupHour        int    `mapstructure:"backup_hour"`
-	BackupMin         int    `mapstructure:"backup_minute"`
-	RetryDuration     int    `mapstructure:"retry_duration"`
-	RetryTimes        int    `mapstructure:"retry_times"`
-	BackupRetain      string `mapstructure:"backup_retain"`
-	BackupDir         string `mapstructure:"backup_dir"`
-	SubDataPath       string
-	BackupLog         string `mapstructure:"backup_log"`
-	ReserveSpace      int64  `mapstructure:"reserve_space"`
-	StartTime         time.Time
-	EndTime           time.Time
-	XtrBin            string
-	LogTable          string
-}
-
-func NewBpServer(hostName string, port int) *BpServer {
-	return &BpServer{
-		HostName:    hostName,
-		Port:        port,
-		SubDataPath: "",
-	}
+	HostName          string    `mapstructure:"host_name"`
+	Host              string    `mapstructure:"host"`
+	Port              int       `mapstructure:"port"`
+	Socket            string    `mapstructure:"socket"`
+	User              string    `mapstructure:"user"`
+	Password          string    `mapstructure:"password"`
+	BackupMethod      string    `mapstructure:"backup_method"`
+	BackupType        string    `mapstructure:"backup_type"`
+	Compress          bool      `mapstructure:"compress"`
+	CompressThreads   int       `mapstructure:"compress_threads"`
+	BackupFullWeekday int       `mapstructure:"backup_full_weekday"`
+	BackupHour        int       `mapstructure:"backup_hour"`
+	BackupMin         int       `mapstructure:"backup_minute"`
+	RetryDuration     int       `mapstructure:"retry_duration"`
+	RetryTimes        int       `mapstructure:"retry_times"`
+	BackupRetain      string    `mapstructure:"backup_retain"`
+	BackupDir         string    `mapstructure:"backup_dir"`
+	SubDataPath       string    `mapstructure:"sub_data_path"`
+	BackupLog         string    `mapstructure:"backup_log"`
+	ReserveSpace      int64     `mapstructure:"reserve_space"`
+	StartTime         time.Time `mapstructure:"start_time"`
+	EndTime           time.Time `mapstructure:"end_time"`
+	XtrBin            string    `mapstructure:"xtrabackup_bin"`
+	LogTable          string    `mapstructure:"log_table"`
 }
 
 func (s *BpServer) GenSubPath() (string, error) {
@@ -113,6 +105,7 @@ func (s *BpServer) EstimateDatabaseSize() (int64, error) {
 func (s *BpServer) SpaceAllow() (bool, error) {
 	// Check if the disk space is enough
 	// Get the disk space
+
 	FreeSpace, err := utils.GetDiskFreeSpace(s.BackupDir)
 	if err != nil {
 		return false, err

@@ -1,14 +1,13 @@
 package cmd
 
 import (
-	"log"
-
 	"github.com/AmiasLi/mytote/config"
 	"github.com/AmiasLi/mytote/db"
 	"github.com/AmiasLi/mytote/logs"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"log"
 )
 
 var (
@@ -17,11 +16,9 @@ var (
 )
 
 func init() {
-	// cobra.OnInitialize(initConfig)
-	// default configration
 	cobra.OnInitialize(func() {
-		initConfig()
 		configDefault()
+		initConfig()
 		Conf.BpServer.LogTable = Conf.LogMySQL.Table
 		logs.InitLog(Conf.BpServer.BackupLog)
 		InitMySQL()
@@ -30,7 +27,8 @@ func init() {
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(startCmd)
 	rootCmd.AddCommand(backupCmd)
-	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "default ./config.yml")
+	rootCmd.PersistentFlags().StringVarP(&cfgFile,
+		"config", "c", "", "default ./config.yml")
 
 }
 
@@ -66,6 +64,7 @@ func initConfig() {
 		err := viper.Unmarshal(&Conf, func(conf *mapstructure.DecoderConfig) {
 			conf.ErrorUnused = true
 		})
+
 		if err != nil {
 			log.Fatalf("unable to decode into struct, %v", err)
 		}

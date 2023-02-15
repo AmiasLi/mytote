@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"io"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/AmiasLi/mytote/db"
@@ -85,7 +86,12 @@ func NewLogContents(errMessage string, backupStatus string, startTime time.Time,
 func InitLog(BackupLog string) {
 	// Log to the file
 	//WrOutput1 := os.Stdout
-
+	if DirExists := utils.CheckDirExists(filepath.Dir(BackupLog)); !DirExists {
+		err := os.Mkdir(filepath.Dir(BackupLog), 0755)
+		if err != nil {
+			logrus.Fatalf("Error creating the backup log directory: %s\n", err)
+		}
+	}
 	f, err := os.OpenFile(BackupLog, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		logrus.Fatalf("error opening log file: %v", err)

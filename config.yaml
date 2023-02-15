@@ -33,7 +33,7 @@ server:
   backup_retain: 7
 
   #  if null will use current directory
-  backup_dir: /data/backup
+  backup_dir: /data/backup_data_backup
 
   backup_log: /data/backup_data/backup.log
 
@@ -54,10 +54,10 @@ mysql_log:
   table: backup_logs
 
 #record backup log to mongodb
-mongodb_log:
-  host: 127.0.0.1
-  port: 27017
-  user: dba
-  password: 123456@Aa
-  db: test
-  Collection: backup_logs
+#mongodb_log:
+#  host: 127.0.0.1
+#  port: 27017
+#  user: dba
+#  password: 123456@Aa
+#  db: test
+#  Collection: backup_logs
