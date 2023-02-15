@@ -2,40 +2,54 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
 type Config struct {
-	BackupServer   BackupServer   `yaml:"backup_server"`
-	LogMySQLServer LogMySQLServer `yaml:"mysql_log"`
+	Server     `mapstructure:"server"`
+	LogMySQL   `mapstructure:"mysql_log"`
+	LogMongoDB `mapstructure:mongodb_log`
 }
 
-type BackupServer struct {
-	Host            string `yaml:"host"`
-	Port            int    `yaml:"port"`
-	Socket          string `yaml:"socket"`
-	User            string `yaml:"user"`
-	Password        string `yaml:"password"`
-	BackupType      string `yaml:"backup_type"`
-	Compress        bool   `yaml:"compress"`
-	CompressThreads int    `yaml:"compress_threads"`
-	BackupHour      int    `yaml:"backup_hour"`
-	BackupMin       int    `yaml:"backup_minute"`
-	RetryDuration   int    `yaml:"retry_duration"`
-	BackupRetain    string `yaml:"backup_retain"`
-	BackupDir       string `yaml:"backup_dir"`
-	BackupLog       string `yaml:"backup_log"`
-	ReserveSpace    int64  `yaml:"reserve_space"`
+type Server struct {
+	Host              string `mapstructure:"host"`
+	Port              int    `mapstructure:"port"`
+	Socket            string `mapstructure:"socket"`
+	User              string `mapstructure:"user"`
+	Password          string `mapstructure:"password"`
+	BakcupMethod      string `mapstructure:"backup_method"`
+	BackupType        string `mapstructure:"backup_type"`
+	Compress          bool   `mapstructure:"compress"`
+	CompressThreads   int    `mapstructure:"compress_threads"`
+	BackupFullWeekday int    `mapstructure:"backup_full_weekday"`
+	BackupHour        int    `mapstructure:"backup_hour"`
+	BackupMin         int    `mapstructure:"backup_minute"`
+	RetryDuration     int    `mapstructure:"retry_duration"`
+	RetryTimes        int    `mapstructure:"retry_times"`
+	BackupRetain      string `mapstructure:"backup_retain"`
+	BackupDir         string `mapstructure:"backup_dir"`
+	BackupLog         string `mapstructure:"backup_log"`
+	ReserveSpace      int64  `mapstructure:"reserve_space"`
 }
 
-type LogMySQLServer struct {
-	MysqlLogHost     string `yaml:"host"`
-	MysqlLogPort     string `yaml:"port"`
-	MysqlLogUser     string `yaml:"user"`
-	MysqlLogPassword string `yaml:"password"`
-	MysqlLogDb       string `yaml:"db"`
-	MysqlLogTable    string `yaml:"table"`
+type LogMySQL struct {
+	Host     string `yaml:"host"`
+	Port     string `yaml:"port"`
+	User     string `yaml:"user"`
+	Password string `yaml:"password"`
+	Db       string `yaml:"db"`
+	Table    string `yaml:"table"`
+}
+
+type LogMongoDB struct {
+	Host       string `yaml:"host"`
+	Port       string `yaml:"port"`
+	User       string `yaml:"user"`
+	Password   string `yaml:"password"`
+	Db         string `yaml:"db"`
+	Collection string `yaml:"table"`
 }
 
 var Conf Config

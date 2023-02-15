@@ -1,39 +1,48 @@
-#backup_server:
-#  port: 3306
-#  host: 127.0.0.1
-#
-#  #  only support backup on localhost
-#  user: dba
-#  password: 123456@Aa
-#
-#  #  if null will use current directory
-#  backup_dir: /data/backup
-#
-#  backup_log: /data/backup_data/backup.log
-#  backup_retain: 7
-#  backup_hour: 13
-#  backup_minute: 54
-#
-#  #  Spare a space for the disk
-#  #  If the disk space is less than the reserve space, the backup will not be performed
-#  #  Data unit is GB
-#  #  Current Disk size DataBase size is going to be backup
-#  reserve_space: 5
-#
-#  #  If the backup fails, it will be retried after the specified time
-#  retry_duration: 15
-#
-#  # at present, only support backup with xtrabackup
-##  backup_method: xtrabackup
-#  backup_type: full
-#  compress: 1
-#  compress_threads: 3
-#
-#  #  If the backup_method is "incr", the day of full backup will be specified
-#  #  0-6, 0 is Sunday
-#  #  If not specified, the full backup will be performed Sunday
-#  full_backup_weekday: 1
+server:
+  host: 127.0.0.1
+  port: 3306
+  socket:
 
+  #  only support backup on localhost
+  user: dba
+  password: 123456@Aa
+
+  # at present, only support backup with xtrabackup
+  # backup_method: mysqldump
+  backup_method: xtrabackup
+
+  # 备份方式和压缩线程
+  backup_type: full
+  compress: 1
+  compress_threads: 3
+
+  #  If the backup_method is "incr", the day of full backup will be specified
+  #  0-6, 0 is Sunday
+  #  If not specified, the full backup will be performed Sunday
+  backup_full_weekday: 1
+  backup_hour: 13
+  backup_minute: 54
+
+  #  If the backup fails, it will be retried after the specified time
+  # 备份重试次数和时间
+  retry_duration: 15
+  retry_times: 1
+
+  # keep days of backup
+  # 备份保存天数
+  backup_retain: 7
+
+  #  if null will use current directory
+  backup_dir: /data/backup
+
+  backup_log: /data/backup_data/backup.log
+
+  #  Spare a space for the disk
+  #  If the disk space is less than the reserve space, the backup will not be performed
+  #  Data unit is GB
+  #  Current Disk size DataBase size is going to be backup
+  # 预留空间，备份前计算
+  reserve_space: 5
 
 #record backup log to mysql
 mysql_log:
@@ -44,12 +53,11 @@ mysql_log:
   db: mysql_backup_info
   table: backup_logs
 
-
-
-
 #record backup log to mongodb
-#mongodb_log:
-#  mongodb_log_user: dba
-#  mongodb_log_password: 123456@Aa
-#  mongodb_log_port: 27017
-#  mongodb_log_host:
+mongodb_log:
+  host: 127.0.0.1
+  port: 27017
+  user: dba
+  password: 123456@Aa
+  db: test
+  Collection: backup_logs
