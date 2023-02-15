@@ -21,7 +21,7 @@ func (s *BpServer) ServerBackupProcess() error {
 	// Check if the server is online
 	online, err := bpServer.GetServerStatus()
 	if err != nil {
-		logrus.Errorf("Server is offline: %s", err)
+		logrus.Errorf("can not connect to backup server[%s:%d] : %s", s.Host, s.Port, err)
 		LogContentsObj := logs.NewLogContents(err.Error(), "ERROR",
 			bpServer.StartTime, time.Now(),
 			fmt.Sprintf("%v", time.Now().Sub(bpServer.StartTime)),

@@ -30,7 +30,7 @@ func (s *BpServer) RemoveFiles() {
 			logrus.Errorf("Error removing files: %s\n", err)
 		}
 	} else {
-		logrus.Errorf("Error getting files: %s\n", err)
+		logrus.Errorf("Error getting files to drop: %s\n", err)
 	}
 }
 

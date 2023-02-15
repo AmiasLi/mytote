@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/AmiasLi/mytote/config"
+	"github.com/AmiasLi/mytote/logs"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -17,7 +18,12 @@ var (
 func init() {
 	cobra.OnInitialize(initConfig)
 
+	// default configration
 	configDefault()
+
+	cobra.OnInitialize(func() {
+		logs.InitLog(Conf.BpServer.BackupLog)
+	})
 
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(backupCmd)

@@ -79,11 +79,10 @@ func (s *BpServer) GetServerStatus() (bool, error) {
 		}
 	}(dbs)
 	if err != nil {
-		logrus.Errorf("Error connecting to backup database: %s\n", err)
+		return false, err
 	}
 	_, err = dbs.Exec("SELECT 1")
 	if err != nil {
-		logrus.Errorf("Error executing query: %s\n", err)
 		return false, err
 	}
 	return true, nil
@@ -92,7 +91,6 @@ func (s *BpServer) GetServerStatus() (bool, error) {
 func (s *BpServer) EstimateDatabaseSize() (int64, error) {
 	dbs, err := db.GetBackupConnection()
 	if err != nil {
-		logrus.Errorf("Error connecting to backup database: %s\n", err)
 		return 0, err
 	}
 	defer func(dbs *sql.DB) {
@@ -107,7 +105,6 @@ func (s *BpServer) EstimateDatabaseSize() (int64, error) {
 	err = dbs.QueryRow("select sum(FILE_SIZE) from information_schema.INNODB_TABLESPACES;").Scan(&SizeDataBase)
 
 	if err != nil {
-		logrus.Errorf("Error getting the database size: %s\n", err)
 		return 0, err
 	}
 	return SizeDataBase, nil
@@ -118,7 +115,6 @@ func (s *BpServer) SpaceAllow() (bool, error) {
 	// Get the disk space
 	FreeSpace, err := utils.GetDiskFreeSpace(s.BackupDir)
 	if err != nil {
-		logrus.Errorf("Error getting the disk space: %s\n", err)
 		return false, err
 	}
 
@@ -131,7 +127,6 @@ func (s *BpServer) SpaceAllow() (bool, error) {
 
 	// Check if the disk space is enough
 	if FreeSpace < SizeDataBase+s.ReserveSpace {
-		logrus.Errorf("The disk space is not enough")
 		return false, errors.New("the disk space is not enough")
 	}
 	return true, nil
