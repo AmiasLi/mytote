@@ -73,15 +73,12 @@ func initConfig() {
 }
 
 func InitMySQL() {
-	connLogMySQL := db.ConnString(Conf.LogMySQL)
-	connBackupMySQL := db.ConnString{
+	db.ConnLogMySQL = db.ConnString(Conf.LogMySQL)
+	db.ConnBackupMySQL = db.ConnString{
 		Host:     Conf.BpServer.Host,
 		Port:     Conf.BpServer.Port,
 		User:     Conf.BpServer.User,
 		Password: Conf.BpServer.Password,
 		Db:       "information_schema",
 	}
-
-	db.GetBackupConnection(connLogMySQL)
-	db.GetLogConnection(connBackupMySQL)
 }

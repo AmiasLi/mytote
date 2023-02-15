@@ -17,6 +17,11 @@ type ConnString struct {
 	Table    string
 }
 
+var (
+	ConnLogMySQL    ConnString
+	ConnBackupMySQL ConnString
+)
+
 func GetConnection(conn *ConnString) (*sql.DB, error) {
 	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%d)/%s",
 		conn.User,
@@ -33,10 +38,10 @@ func GetConnection(conn *ConnString) (*sql.DB, error) {
 	return db, nil
 }
 
-func GetLogConnection(connLogMySQL ConnString) (*sql.DB, error) {
-	return GetConnection(&connLogMySQL)
+func GetLogConnection() (*sql.DB, error) {
+	return GetConnection(&ConnLogMySQL)
 }
 
-func GetBackupConnection(connBackupServer ConnString) (*sql.DB, error) {
-	return GetConnection(&connBackupServer)
+func GetBackupConnection() (*sql.DB, error) {
+	return GetConnection(&ConnBackupMySQL)
 }
