@@ -28,6 +28,7 @@ func init() {
 	})
 
 	rootCmd.AddCommand(versionCmd)
+	rootCmd.AddCommand(startCmd)
 	rootCmd.AddCommand(backupCmd)
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "default ./config.yml")
 
