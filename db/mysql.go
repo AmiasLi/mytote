@@ -3,7 +3,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"github.com/AmiasLi/mytote/config"
+
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/sirupsen/logrus"
 )
@@ -14,23 +14,12 @@ type ConnString struct {
 	User     string
 	Password string
 	Db       string
+	Table    string
 }
 
-var stringLogServer = ConnString{
-	Host:     config.Conf.MysqlLogHost,
-	Port:     config.Conf.MysqlLogPort,
-	User:     config.Conf.MysqlLogUser,
-	Password: config.Conf.MysqlLogPassword,
-	Db:       config.Conf.MysqlLogDb,
-}
+var stringLogMySQL = ConnString{}
 
-var stringBackupServer = ConnString{
-	Host:     config.Conf.Host,
-	Port:     config.Conf.Port,
-	User:     config.Conf.User,
-	Password: config.Conf.Password,
-	Db:       "information_schema",
-}
+var stringBackupServer = ConnString{}
 
 func GetConnection(conn *ConnString) (*sql.DB, error) {
 	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%d)/%s",
@@ -49,7 +38,7 @@ func GetConnection(conn *ConnString) (*sql.DB, error) {
 }
 
 func GetLogConnection() (*sql.DB, error) {
-	return GetConnection(&stringLogServer)
+	return GetConnection(&stringLogMySQL)
 }
 
 func GetBackupConnection() (*sql.DB, error) {

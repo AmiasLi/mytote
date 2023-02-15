@@ -2,20 +2,19 @@ package server
 
 import (
 	"fmt"
-	"github.com/AmiasLi/mytote/config"
+	"strconv"
+	"time"
+
 	"github.com/AmiasLi/mytote/logs"
 	"github.com/AmiasLi/mytote/utils"
 	"github.com/robfig/cron"
 	"github.com/sirupsen/logrus"
-	"strconv"
-	"time"
 )
 
-func BackupEntry() error {
+func (s *BpServer) ServerBackupProcess() error {
 	// Create a new backup server
 	HostName := utils.GetHostName()
-	Port := config.Conf.Port
-	bpServer := NewBpServer(HostName, Port)
+	bpServer := NewBpServer(HostName, s.Port)
 	bpServer.StartTime = time.Now()
 	bpServer.EndTime = time.Now()
 
@@ -26,9 +25,9 @@ func BackupEntry() error {
 		LogContentsObj := logs.NewLogContents(err.Error(), "ERROR",
 			bpServer.StartTime, time.Now(),
 			fmt.Sprintf("%v", time.Now().Sub(bpServer.StartTime)),
-			"", 0)
+			"", 0, s.Host, s.Port, s.BackupType)
 
-		logs.LogToMySQL(LogContentsObj)
+		logs.LogToMySQL(LogContentsObj, s.LogTable)
 		return err
 	}
 
@@ -39,9 +38,9 @@ func BackupEntry() error {
 		LogContentsObj := logs.NewLogContents(err.Error(), "ERROR",
 			bpServer.StartTime, time.Now(),
 			fmt.Sprintf("%v", time.Now().Sub(bpServer.StartTime)),
-			"", 0)
+			"", 0, s.Host, s.Port, s.BackupType)
 
-		logs.LogToMySQL(LogContentsObj)
+		logs.LogToMySQL(LogContentsObj, s.LogTable)
 		return err
 	}
 
@@ -52,9 +51,9 @@ func BackupEntry() error {
 		LogContentsObj := logs.NewLogContents(err.Error(), "ERROR",
 			bpServer.StartTime, time.Now(),
 			fmt.Sprintf("%v", time.Now().Sub(bpServer.StartTime)),
-			"", 0)
+			"", 0, s.Host, s.Port, s.BackupType)
 
-		logs.LogToMySQL(LogContentsObj)
+		logs.LogToMySQL(LogContentsObj, s.LogTable)
 		return err
 	}
 
@@ -66,21 +65,21 @@ func BackupEntry() error {
 		LogContentsObj := logs.NewLogContents(err.Error(), "ERROR",
 			bpServer.StartTime, time.Now(),
 			fmt.Sprintf("%v", time.Now().Sub(bpServer.StartTime)),
-			"", 0)
+			"", 0, s.Host, s.Port, s.BackupType)
 
-		logs.LogToMySQL(LogContentsObj)
+		logs.LogToMySQL(LogContentsObj, s.LogTable)
 
 		return err
 	}
 
 	if online && xtrExec != "" && bpServer.SubDataPath != "" && spaceAllow {
 		// Run the backup
-		bpServer.xtrBin = xtrExec
+		bpServer.XtrBin = xtrExec
 		err := bpServer.Backup()
 		if err != nil {
 			logrus.Errorf("Error running backup: %s\n", err)
-			logrus.Infof("Retrying afer %d.\n", config.Conf.RetryDuration)
-			time.Sleep(time.Duration(config.Conf.RetryDuration) * time.Minute)
+			logrus.Infof("Retrying afer %d.\n", bpServer.RetryDuration)
+			time.Sleep(time.Duration(bpServer.RetryDuration) * time.Minute)
 
 			err := bpServer.Backup()
 			if err != nil {
@@ -94,9 +93,9 @@ func BackupEntry() error {
 	return nil
 }
 
-func DoBackup() {
-	RemoveFiles()
-	err := BackupEntry()
+func (s *BpServer) ManageBackup() {
+	s.RemoveFiles()
+	err := s.ServerBackupProcess()
 	if err != nil {
 		logrus.Errorf("Error running backup: %s\n", err)
 	} else {
@@ -104,17 +103,12 @@ func DoBackup() {
 	}
 }
 
-func CombineSchedule() string {
-	cronSchedule := "0 " + strconv.Itoa(config.Conf.BackupMin) +
-		" " + strconv.Itoa(config.Conf.BackupHour) + " * * *"
-	return cronSchedule
-}
-
-func BackupCron() {
+func (s *BpServer) BackupCron() {
 	logrus.Infof("mytote is running")
-	cronSchedule := CombineSchedule()
+	cronSchedule := "0 " + strconv.Itoa(s.BackupMin) +
+		" " + strconv.Itoa(s.BackupHour) + " * * *"
 	c := cron.New()
-	err := c.AddFunc(cronSchedule, DoBackup)
+	err := c.AddFunc(cronSchedule, s.ManageBackup)
 	if err != nil {
 		logrus.Fatalf("Error adding cron job: %s\n", err)
 	}

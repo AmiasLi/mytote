@@ -2,12 +2,12 @@ package server
 
 import (
 	"database/sql"
-	"github.com/AmiasLi/mytote/config"
+	"os"
+	"path/filepath"
+
 	"github.com/AmiasLi/mytote/db"
 	"github.com/AmiasLi/mytote/utils"
 	"github.com/sirupsen/logrus"
-	"os"
-	"path/filepath"
 )
 
 type FilesInfo struct {
@@ -15,12 +15,12 @@ type FilesInfo struct {
 	BackupFile string
 }
 
-func RemoveFiles() {
+func (s *BpServer) RemoveFiles() {
 
 	// Remove the backup files that are older than the retention period
 
-	if Files, err := NeedRemoveFiles(); err == nil {
-		if FileList, err := RemoveFilesList(Files); err == nil {
+	if Files, err := s.NeedRemoveFiles(); err == nil {
+		if FileList, err := s.RemoveFilesList(Files); err == nil {
 			if len(FileList) > 0 {
 				logrus.Infof("Remove files: %s\n", FileList)
 			} else {
@@ -34,7 +34,7 @@ func RemoveFiles() {
 	}
 }
 
-func NeedRemoveFiles() ([]FilesInfo, error) {
+func (s *BpServer) NeedRemoveFiles() ([]FilesInfo, error) {
 	connection, err := db.GetLogConnection()
 	if err != nil {
 		return nil, err
@@ -48,9 +48,9 @@ func NeedRemoveFiles() ([]FilesInfo, error) {
 
 	// Insert the log into the MySQL database
 	rows, err := connection.Query("select id,backup_file " +
-		"from " + config.Conf.MysqlLogTable + " where backup_status = 'SUCCESS' " +
+		"from " + s.LogTable + " where backup_status = 'SUCCESS' " +
 		" and backup_type = 'full' and backup_file_status = 1" + " and backup_date < now()" +
-		" - interval " + config.Conf.BackupRetain + " day;")
+		" - interval " + s.BackupRetain + " day;")
 
 	if err != nil {
 		return nil, err
@@ -74,7 +74,7 @@ func NeedRemoveFiles() ([]FilesInfo, error) {
 	return filesInfoSlice, nil
 }
 
-func RemoveFilesList(backupFileList []FilesInfo) ([]string, error) {
+func (s *BpServer) RemoveFilesList(backupFileList []FilesInfo) ([]string, error) {
 	//Remove the backup files
 	// update the file info in the MySQL database
 	var RemoveFileList []string
@@ -84,7 +84,7 @@ func RemoveFilesList(backupFileList []FilesInfo) ([]string, error) {
 	}
 
 	for _, backupFile := range backupFileList {
-		if filepath.Dir(backupFile.BackupFile) == config.Conf.BackupDir {
+		if filepath.Dir(backupFile.BackupFile) == s.BackupDir {
 
 			// Check if the file is a backup file, if not, do not delete it
 			RemoveFlag, err := utils.MatchBackupFile(backupFile.BackupFile)
@@ -101,7 +101,7 @@ func RemoveFilesList(backupFileList []FilesInfo) ([]string, error) {
 			err = os.RemoveAll(backupFile.BackupFile)
 			if err == nil {
 				RemoveFileList = append(RemoveFileList, backupFile.BackupFile)
-				err = UpdateFileStatus(backupFile.ID)
+				err = s.UpdateFileStatus(backupFile.ID)
 				if err != nil {
 					logrus.Errorf("Error updating file status: %s\n", err)
 				}
@@ -113,7 +113,7 @@ func RemoveFilesList(backupFileList []FilesInfo) ([]string, error) {
 	return RemoveFileList, nil
 }
 
-func UpdateFileStatus(backupFileId int) error {
+func (s *BpServer) UpdateFileStatus(backupFileId int) error {
 	connection, err := db.GetLogConnection()
 	if err != nil {
 		return err
@@ -125,7 +125,7 @@ func UpdateFileStatus(backupFileId int) error {
 		}
 	}(connection)
 
-	_, err = connection.Exec("update "+config.Conf.MysqlLogTable+
+	_, err = connection.Exec("update "+s.LogTable+
 		" set backup_file_status = 0 ,file_drop_time = now()"+""+
 		"where id = ?;", backupFileId)
 

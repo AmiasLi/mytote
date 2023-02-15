@@ -3,21 +3,39 @@ package server
 import (
 	"database/sql"
 	"errors"
-	"github.com/AmiasLi/mytote/config"
+	"os"
+	"time"
+
 	"github.com/AmiasLi/mytote/db"
 	"github.com/AmiasLi/mytote/utils"
 	"github.com/sirupsen/logrus"
-	"os"
-	"time"
 )
 
 type BpServer struct {
-	HostName    string
-	Port        int
-	SubDataPath string
-	StartTime   time.Time
-	EndTime     time.Time
-	xtrBin      string
+	HostName          string
+	Host              string `mapstructure:"host"`
+	Port              int    `mapstructure:"port"`
+	Socket            string `mapstructure:"socket"`
+	User              string `mapstructure:"user"`
+	Password          string `mapstructure:"password"`
+	BakcupMethod      string `mapstructure:"backup_method"`
+	BackupType        string `mapstructure:"backup_type"`
+	Compress          bool   `mapstructure:"compress"`
+	CompressThreads   int    `mapstructure:"compress_threads"`
+	BackupFullWeekday int    `mapstructure:"backup_full_weekday"`
+	BackupHour        int    `mapstructure:"backup_hour"`
+	BackupMin         int    `mapstructure:"backup_minute"`
+	RetryDuration     int    `mapstructure:"retry_duration"`
+	RetryTimes        int    `mapstructure:"retry_times"`
+	BackupRetain      string `mapstructure:"backup_retain"`
+	BackupDir         string `mapstructure:"backup_dir"`
+	SubDataPath       string
+	BackupLog         string `mapstructure:"backup_log"`
+	ReserveSpace      int64  `mapstructure:"reserve_space"`
+	StartTime         time.Time
+	EndTime           time.Time
+	XtrBin            string
+	LogTable          string
 }
 
 func NewBpServer(hostName string, port int) *BpServer {
@@ -32,13 +50,13 @@ func (s *BpServer) GenSubPath() (string, error) {
 	// Generate the backup directory path
 
 	// Check if the backup directory exists
-	IsExists := utils.CheckDirExists(config.Conf.BackupDir)
+	IsExists := utils.CheckDirExists(s.BackupDir)
 	if !IsExists {
 		return "", errors.New("backup directory does not exist")
 	}
 
 	SubDirName := s.HostName + "_backup_" + time.Now().Format("20060102_150405")
-	TarGetDir := config.Conf.BackupDir + "/" + SubDirName
+	TarGetDir := s.BackupDir + "/" + SubDirName
 	err := os.Mkdir(TarGetDir, 0755)
 	if err != nil {
 		return "", errors.New("error creating backup directory")
@@ -98,7 +116,7 @@ func (s *BpServer) EstimateDatabaseSize() (int64, error) {
 func (s *BpServer) SpaceAllow() (bool, error) {
 	// Check if the disk space is enough
 	// Get the disk space
-	FreeSpace, err := utils.GetDiskFreeSpace(config.Conf.BackupDir)
+	FreeSpace, err := utils.GetDiskFreeSpace(s.BackupDir)
 	if err != nil {
 		logrus.Errorf("Error getting the disk space: %s\n", err)
 		return false, err
@@ -112,7 +130,7 @@ func (s *BpServer) SpaceAllow() (bool, error) {
 	}
 
 	// Check if the disk space is enough
-	if FreeSpace < SizeDataBase+config.Conf.ReserveSpace {
+	if FreeSpace < SizeDataBase+s.ReserveSpace {
 		logrus.Errorf("The disk space is not enough")
 		return false, errors.New("the disk space is not enough")
 	}

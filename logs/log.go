@@ -2,13 +2,13 @@ package logs
 
 import (
 	"database/sql"
-	"github.com/AmiasLi/mytote/config"
-	"github.com/AmiasLi/mytote/db"
-	"github.com/AmiasLi/mytote/utils"
-	"github.com/sirupsen/logrus"
 	"io"
 	"os"
 	"time"
+
+	"github.com/AmiasLi/mytote/db"
+	"github.com/AmiasLi/mytote/utils"
+	"github.com/sirupsen/logrus"
 )
 
 type LogContents struct {
@@ -25,7 +25,7 @@ type LogContents struct {
 	ErrMessage   string
 }
 
-func LogToMySQL(contents *LogContents) {
+func LogToMySQL(contents *LogContents, logTable string) {
 	// Connect to the MySQL server
 	// Insert the log into the MySQL database
 	DbObj, err := db.GetLogConnection()
@@ -35,7 +35,7 @@ func LogToMySQL(contents *LogContents) {
 	}
 
 	// Insert the log into the MySQL database
-	stmt, err := DbObj.Prepare("INSERT INTO" + " " + config.Conf.MysqlLogTable +
+	stmt, err := DbObj.Prepare("INSERT INTO" + " " + logTable +
 		" (" + "host_name, " +
 		"ip, port, backup_type, " +
 		"backup_file, backup_size," +
@@ -65,12 +65,12 @@ func LogToMySQL(contents *LogContents) {
 }
 
 func NewLogContents(errMessage string, backupStatus string, startTime time.Time, endTime time.Time,
-	duration string, backupFile string, backupSize int64) *LogContents {
+	duration string, backupFile string, backupSize int64, Host string, Port int, BackupType string) *LogContents {
 	logContentsObj := LogContents{
 		HostName:     utils.GetHostName(),
-		IP:           config.Conf.Host,
-		Port:         config.Conf.Port,
-		BackupType:   config.Conf.BackupType,
+		IP:           Host,
+		Port:         Port,
+		BackupType:   BackupType,
 		StartTime:    startTime,
 		EndTime:      endTime,
 		Duration:     duration,
@@ -82,11 +82,11 @@ func NewLogContents(errMessage string, backupStatus string, startTime time.Time,
 	return &logContentsObj
 }
 
-func InitLog() {
+func InitLog(BackupLog string) {
 	// Log to the file
 	//WrOutput1 := os.Stdout
 
-	f, err := os.OpenFile(config.Conf.BackupLog, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	f, err := os.OpenFile(BackupLog, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		logrus.Fatalf("error opening log file: %v", err)
 	}
