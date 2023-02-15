@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/AmiasLi/mytote/config"
+	"github.com/AmiasLi/mytote/db"
 	"github.com/AmiasLi/mytote/logs"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/cobra"
@@ -23,6 +24,7 @@ func init() {
 
 	cobra.OnInitialize(func() {
 		logs.InitLog(Conf.BpServer.BackupLog)
+		InitMySQL()
 	})
 
 	rootCmd.AddCommand(versionCmd)
@@ -68,4 +70,18 @@ func initConfig() {
 		}
 
 	}
+}
+
+func InitMySQL() {
+	connLogMySQL := db.ConnString(Conf.LogMySQL)
+	connBackupMySQL := db.ConnString{
+		Host:     Conf.BpServer.Host,
+		Port:     Conf.BpServer.Port,
+		User:     Conf.BpServer.User,
+		Password: Conf.BpServer.Password,
+		Db:       "information_schema",
+	}
+
+	db.GetBackupConnection(connLogMySQL)
+	db.GetLogConnection(connBackupMySQL)
 }
