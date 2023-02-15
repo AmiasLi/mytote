@@ -2,7 +2,6 @@ package server
 
 import (
 	"database/sql"
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -48,7 +47,6 @@ func (s *BpServer) NeedRemoveFiles() ([]FilesInfo, error) {
 	}(connection)
 
 	// Insert the log into the MySQL database
-	fmt.Println("*********", s.LogTable, s.BackupRetain)
 	rows, err := connection.Query("select id,backup_file " +
 		"from " + s.LogTable + " where backup_status = 'SUCCESS' " +
 		" and backup_type = 'full' and backup_file_status = 1" + " and backup_date < now()" +
