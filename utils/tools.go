@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"strconv"
 	"syscall"
 )
 
@@ -81,4 +82,23 @@ func MatchBackupFile(FileString string) (bool, error) {
 		return false, err
 	}
 	return match, nil
+}
+
+func ByteHumanRead(byteSize int64) string {
+	var unit string
+	var size float64
+	if byteSize < 1024 {
+		unit = "B"
+		size = float64(byteSize)
+	} else if byteSize < 1024*1024 {
+		unit = "KB"
+		size = float64(byteSize) / 1024
+	} else if byteSize < 1024*1024*1024 {
+		unit = "MB"
+		size = float64(byteSize) / 1024 / 1024
+	} else {
+		unit = "GB"
+		size = float64(byteSize) / 1024 / 1024 / 1024
+	}
+	return strconv.Itoa(int(size)) + unit
 }

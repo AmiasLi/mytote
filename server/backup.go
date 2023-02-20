@@ -55,8 +55,11 @@ func (s *BpServer) Backup() error {
 			"status": "SUCCESS",
 		}).Info("Backup complete")
 
+		s.BackupStatus = true
+
 		s.EndTime = time.Now()
 		backupSize, err := utils.GetDirectorySize(s.SubDataPath)
+		s.BackupSize = backupSize
 
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
@@ -67,7 +70,7 @@ func (s *BpServer) Backup() error {
 		LogContentsObj := logs.NewLogContents("", "SUCCESS",
 			s.StartTime, time.Now(),
 			fmt.Sprintf("%v", s.EndTime.Sub(s.StartTime)),
-			s.SubDataPath, backupSize, s.Host, s.Port, s.BackupType)
+			s.SubDataPath, s.BackupSize, s.Host, s.Port, s.BackupType)
 
 		logs.LogToMySQL(LogContentsObj, s.LogTable)
 
