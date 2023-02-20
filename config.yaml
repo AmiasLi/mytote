@@ -6,7 +6,7 @@ server:
 
   #  only support backup on localhost
   user: dba
-  password: 123456@Aa
+  password: 1234Aa
 
   # at present, only support backup with xtrabackup
   # backup_method: mysqldump
@@ -50,14 +50,14 @@ mysql_log:
   host: 192.168.3.62
   port: 3306
   user: dba
-  password: 123456@Aa
+  password: 12345a
   db: mysql_backup_info
   table: backup_logs
 
 ding_talk_log:
-  token: a6fa9bd1b631f2caf7ccbb76eff7db05d193c58f777cdda79913508c6a29a1f3
-  proxy_url: http://192.168.55.208:1080
-  secret: SEC0a7cfe8ca36ab44d17a54ec6e8904235c90b33c52969ee8329a0735135c94198
+  token:
+  proxy_url:
+  secret:
 
 #record backup log to mongodb
 mongodb_log:
