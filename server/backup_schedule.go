@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"fmt"
 	"github.com/AmiasLi/mytote/config"
 	"strconv"
@@ -80,16 +81,31 @@ func (s *BpServer) ServerBackupProcess() error {
 		err := s.Backup()
 		if err != nil {
 			logrus.Errorf("Error running backup: %s\n", err)
-			logrus.Infof("Retrying afer %d.\n", s.RetryDuration)
-			time.Sleep(time.Duration(s.RetryDuration) * time.Minute)
+			var errRoll error
 
-			err := s.Backup()
-			if err != nil {
-				logrus.Errorf("Error running backup again: %s\n", err)
-				return err
+			for i := 0; i < s.RetryTimes; i++ {
+				logrus.Warnf("Retrying backup after %d minutes.\n", s.RetryDuration)
+				time.Sleep(time.Duration(s.RetryDuration) * time.Minute)
+				logrus.Infof("Retrying %d afer %d.\n", i, s.RetryDuration)
+
+				errRoll = s.Backup()
+				if errRoll != nil {
+					logrus.Errorf("Error running backup again: %s\n", errRoll)
+					continue
+
+				} else {
+					break
+				}
+			}
+
+			if errRoll != nil {
+				return errors.New("backup failed after " +
+					"retrying " + strconv.Itoa(s.RetryTimes) + " times" + errRoll.Error())
 			} else {
 				return nil
 			}
+		} else {
+			return nil
 		}
 	}
 	return nil
