@@ -25,9 +25,6 @@ type LogContentDingTalk struct {
 func (dt LogContentDingTalk) ResultToDingTalkGroup() error {
 	var MsgContent []string
 
-	fmt.Println("------------")
-	fmt.Println(dt.ProxyUrl)
-
 	if dt.ProxyUrl != "" {
 		err := os.Setenv("https_proxy", dt.ProxyUrl)
 		if err != nil {
