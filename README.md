@@ -98,6 +98,11 @@ mysql_log:
 #  password: 123456@Aa
 #  db: test
 #  Collection: backup_logs
+
+ding_talk_log:
+  token:
+  proxy_url:
+  secret:
 ```
 
 In current version, only support backup with xtrabackup, 
