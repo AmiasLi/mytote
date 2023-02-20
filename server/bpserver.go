@@ -3,6 +3,7 @@ package server
 import (
 	"database/sql"
 	"errors"
+	"github.com/AmiasLi/mytote/config"
 	"os"
 	"time"
 
@@ -11,35 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type BpServer struct {
-	BusinessName      string    `mapstructure:"business_name"`
-	HostName          string    `mapstructure:"host_name"`
-	Host              string    `mapstructure:"host"`
-	Port              int       `mapstructure:"port"`
-	Socket            string    `mapstructure:"socket"`
-	User              string    `mapstructure:"user"`
-	Password          string    `mapstructure:"password"`
-	BackupMethod      string    `mapstructure:"backup_method"`
-	BackupType        string    `mapstructure:"backup_type"`
-	Compress          bool      `mapstructure:"compress"`
-	CompressThreads   int       `mapstructure:"compress_threads"`
-	BackupFullWeekday int       `mapstructure:"backup_full_weekday"`
-	BackupHour        int       `mapstructure:"backup_hour"`
-	BackupMin         int       `mapstructure:"backup_minute"`
-	RetryDuration     int       `mapstructure:"retry_duration"`
-	RetryTimes        int       `mapstructure:"retry_times"`
-	BackupRetain      string    `mapstructure:"backup_retain"`
-	BackupDir         string    `mapstructure:"backup_dir"`
-	BackupStatus      bool      `mapstructure:"backup_status"`
-	BackupSize        int64     `mapstructure:"backup_size"`
-	SubDataPath       string    `mapstructure:"sub_data_path"`
-	BackupLog         string    `mapstructure:"backup_log"`
-	ReserveSpace      int64     `mapstructure:"reserve_space"`
-	StartTime         time.Time `mapstructure:"start_time"`
-	EndTime           time.Time `mapstructure:"end_time"`
-	XtrBin            string    `mapstructure:"xtrabackup_bin"`
-	LogTable          string    `mapstructure:"log_table"`
-}
+type BpServer config.Server
 
 func (s *BpServer) GenSubPath() (string, error) {
 	// Generate the backup directory path

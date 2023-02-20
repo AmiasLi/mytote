@@ -9,8 +9,7 @@ import (
 func init() {
 	cobra.OnInitialize(func() {
 		config.InitConfig()
-		config.Conf.BpServer.LogTable = config.Conf.LogMySQL.Table
-		logs.InitLog(config.Conf.BpServer.BackupLog)
+		logs.InitLog(config.Conf.Server.BackupLog)
 		config.InitMySQL()
 	})
 

@@ -2,7 +2,9 @@ package config
 
 import (
 	"github.com/AmiasLi/mytote/db"
-	"github.com/AmiasLi/mytote/server"
+	"github.com/AmiasLi/mytote/utils"
+	"time"
+
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
 	"log"
@@ -14,10 +16,40 @@ var (
 )
 
 type Config struct {
-	server.BpServer `mapstructure:"server"`
-	LogMySQL        `mapstructure:"mysql_log"`
-	LogMongoDB      `mapstructure:"mongodb_log"`
-	LogDingTalk     `mapstructure:"ding_talk_log"`
+	Server      `mapstructure:"server"`
+	LogMySQL    `mapstructure:"mysql_log"`
+	LogMongoDB  `mapstructure:"mongodb_log"`
+	LogDingTalk `mapstructure:"ding_talk_log"`
+}
+
+type Server struct {
+	BusinessName      string    `mapstructure:"business_name"`
+	HostName          string    `mapstructure:"host_name"`
+	Host              string    `mapstructure:"host"`
+	Port              int       `mapstructure:"port"`
+	Socket            string    `mapstructure:"socket"`
+	User              string    `mapstructure:"user"`
+	Password          string    `mapstructure:"password"`
+	BackupMethod      string    `mapstructure:"backup_method"`
+	BackupType        string    `mapstructure:"backup_type"`
+	Compress          bool      `mapstructure:"compress"`
+	CompressThreads   int       `mapstructure:"compress_threads"`
+	BackupFullWeekday int       `mapstructure:"backup_full_weekday"`
+	BackupHour        int       `mapstructure:"backup_hour"`
+	BackupMin         int       `mapstructure:"backup_minute"`
+	RetryDuration     int       `mapstructure:"retry_duration"`
+	RetryTimes        int       `mapstructure:"retry_times"`
+	BackupRetain      string    `mapstructure:"backup_retain"`
+	BackupDir         string    `mapstructure:"backup_dir"`
+	BackupStatus      bool      `mapstructure:"backup_status"`
+	BackupSize        int64     `mapstructure:"backup_size"`
+	SubDataPath       string    `mapstructure:"sub_data_path"`
+	BackupLog         string    `mapstructure:"backup_log"`
+	ReserveSpace      int64     `mapstructure:"reserve_space"`
+	StartTime         time.Time `mapstructure:"start_time"`
+	EndTime           time.Time `mapstructure:"end_time"`
+	XtrBin            string    `mapstructure:"xtrabackup_bin"`
+	LogTable          string    `mapstructure:"log_table"`
 }
 
 type LogMySQL struct {
@@ -39,12 +71,13 @@ type LogMongoDB struct {
 }
 
 type LogDingTalk struct {
-	Token    string `yaml:"token"`
-	ProxyUrl string `yaml:"proxy_url"`
-	Secret   string `yaml:"secret"`
+	Token    string `mapstructure:"token"`
+	ProxyUrl string `mapstructure:"proxy_url"`
+	Secret   string `mapstructure:"secret"`
 }
 
 func defaultConfig() {
+	viper.SetDefault("server.host_name", utils.GetHostName())
 	viper.SetDefault("server.host", "127.0.0.1")
 	viper.SetDefault("server.port", 3306)
 	viper.SetDefault("server.socket", "mysql.sock")
@@ -87,15 +120,15 @@ func readConfig() {
 func InitMySQL() {
 	db.ConnLogMySQL = db.ConnString(Conf.LogMySQL)
 	db.ConnBackupMySQL = db.ConnString{
-		Host:     Conf.BpServer.Host,
-		Port:     Conf.BpServer.Port,
-		User:     Conf.BpServer.User,
-		Password: Conf.BpServer.Password,
+		Host:     Conf.Server.Host,
+		Port:     Conf.Server.Port,
+		User:     Conf.Server.User,
+		Password: Conf.Server.Password,
 		Db:       "information_schema",
 	}
 }
 
 func InitConfig() {
-	readConfig()
 	defaultConfig()
+	readConfig()
 }
