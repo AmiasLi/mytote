@@ -1,12 +1,10 @@
 package server
 
 import (
-	"fmt"
 	"os/exec"
 	"strconv"
 	"time"
 
-	"github.com/AmiasLi/mytote/logs"
 	"github.com/AmiasLi/mytote/utils"
 	"github.com/sirupsen/logrus"
 )
@@ -40,13 +38,9 @@ func (s *BpServer) Backup() error {
 			"status": "ERROR",
 		}).Error("Error running xtrabackup")
 
-		LogContentsObj := logs.NewLogContents(err.Error(), "ERROR",
-			s.StartTime, time.Now(),
-			fmt.Sprintf("%v", time.Now().Sub(s.StartTime)),
-			s.SubDataPath, 0, s.Host, s.Port, s.BackupType)
-
-		logs.LogToMySQL(LogContentsObj, s.LogTable)
-
+		s.EndTime = time.Now()
+		s.BackupSize = 0
+		s.BackupStatus = false
 		return err
 
 	} else {
@@ -55,24 +49,17 @@ func (s *BpServer) Backup() error {
 			"status": "SUCCESS",
 		}).Info("Backup complete")
 
-		s.BackupStatus = true
-
-		s.EndTime = time.Now()
 		backupSize, err := utils.GetDirectorySize(s.SubDataPath)
-		s.BackupSize = backupSize
-
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"error": err,
 			}).Error("Error getting backup size")
-			backupSize = 0
+			s.BackupSize = 0
 		}
-		LogContentsObj := logs.NewLogContents("", "SUCCESS",
-			s.StartTime, time.Now(),
-			fmt.Sprintf("%v", s.EndTime.Sub(s.StartTime)),
-			s.SubDataPath, s.BackupSize, s.Host, s.Port, s.BackupType)
 
-		logs.LogToMySQL(LogContentsObj, s.LogTable)
+		s.BackupSize = backupSize
+		s.BackupStatus = true
+		s.EndTime = time.Now()
 
 		return nil
 	}

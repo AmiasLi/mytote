@@ -14,7 +14,7 @@ var startCmd = &cobra.Command{
 		if viper.ConfigFileUsed() == "" {
 			logrus.Fatal("config file not found")
 		} else {
-			config.Conf.BpServer.ManageBackup()
+			config.Conf.BpServer.ManualBackup()
 		}
 	},
 }

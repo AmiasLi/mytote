@@ -9,12 +9,14 @@ import (
 )
 
 type LogContentDingTalk struct {
+	Instance     string
 	Token        string
 	ProxyUrl     string
 	Secret       string
 	BusinessName string
 	StartTime    time.Time
 	EndTime      time.Time
+	CostTime     string
 	FileName     string
 	FileSize     string
 	Status       bool
@@ -44,12 +46,14 @@ func (dt LogContentDingTalk) ResultToDingTalkGroup() error {
 		MsgContent = append(MsgContent, "- <font color=#B25642 size=6>备份任务：Failed</font>")
 	}
 
-	MdContent3 := fmt.Sprintf("- 备份开始时间：%s", dt.StartTime.Format("2006-01-02 15:04:05"))
-	MdContent4 := fmt.Sprintf("- 备份结束时间：%s", dt.EndTime.Format("2006-01-02 15:04:05"))
-	MdContent5 := fmt.Sprintf("- 备份文件：%s", dt.FileName)
-	MdContent6 := fmt.Sprintf("- 备份文件大小：%s", dt.FileSize)
+	MdContent3 := fmt.Sprintf("- 数据库实例：%s", dt.Instance)
+	MdContent4 := fmt.Sprintf("- 备份开始时间：%s", dt.StartTime.Format("2006-01-02 15:04:05"))
+	MdContent5 := fmt.Sprintf("- 备份结束时间：%s", dt.EndTime.Format("2006-01-02 15:04:05"))
+	MdContent6 := fmt.Sprintf("- 备份耗时：%s", dt.CostTime)
+	MdContent7 := fmt.Sprintf("- 备份文件：%s", dt.FileName)
+	MdContent8 := fmt.Sprintf("- 备份文件大小：%s", dt.FileSize)
 
-	MsgContent = append(MsgContent, MdContent3, MdContent4, MdContent5, MdContent6)
+	MsgContent = append(MsgContent, MdContent3, MdContent4, MdContent5, MdContent6, MdContent7, MdContent8)
 
 	err := cli.SendMarkDownMessageBySlice(MsgTitle, MsgContent)
 	if err != nil {

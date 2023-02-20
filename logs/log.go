@@ -22,7 +22,7 @@ type LogContents struct {
 	StartTime    time.Time
 	EndTime      time.Time
 	Duration     string
-	BackupStatus string
+	BackupStatus bool
 	ErrMessage   string
 }
 
@@ -65,7 +65,7 @@ func LogToMySQL(contents *LogContents, logTable string) {
 	}
 }
 
-func NewLogContents(errMessage string, backupStatus string, startTime time.Time, endTime time.Time,
+func NewLogContents(errMessage string, backupStatus bool, startTime time.Time, endTime time.Time,
 	duration string, backupFile string, backupSize int64, Host string, Port int, BackupType string) *LogContents {
 	logContentsObj := LogContents{
 		HostName:     utils.GetHostName(),

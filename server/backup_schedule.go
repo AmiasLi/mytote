@@ -13,6 +13,13 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+func (s *BpServer) BackupFailConditionStage() {
+	s.BackupStatus = false
+	s.EndTime = time.Now()
+	s.SubDataPath = ""
+	s.BackupSize = 0
+}
+
 func (s *BpServer) ServerBackupProcess() error {
 	// Create a new backup server
 	s.HostName = utils.GetHostName()
@@ -24,25 +31,14 @@ func (s *BpServer) ServerBackupProcess() error {
 	online, err := s.GetServerStatus()
 	if err != nil {
 		logrus.Errorf("can not connect to backup server[%s:%d] : %s", s.Host, s.Port, err)
-		LogContentsObj := logs.NewLogContents(err.Error(), "ERROR",
-			s.StartTime, time.Now(),
-			fmt.Sprintf("%v", time.Now().Sub(s.StartTime)),
-			"", 0, s.Host, s.Port, s.BackupType)
-
-		logs.LogToMySQL(LogContentsObj, s.LogTable)
+		s.BackupFailConditionStage()
 		return err
 	}
 
 	xtrExec, err := utils.CheckXtrabackupInstalled()
 	if err != nil {
 		logrus.Errorf("xtrabackup not found: %s\n", err)
-
-		LogContentsObj := logs.NewLogContents(err.Error(), "ERROR",
-			s.StartTime, time.Now(),
-			fmt.Sprintf("%v", time.Now().Sub(s.StartTime)),
-			"", 0, s.Host, s.Port, s.BackupType)
-
-		logs.LogToMySQL(LogContentsObj, s.LogTable)
+		s.BackupFailConditionStage()
 		return err
 	}
 
@@ -50,13 +46,7 @@ func (s *BpServer) ServerBackupProcess() error {
 
 	if err != nil {
 		logrus.Errorf("error checking free disk: %s\n", err)
-
-		LogContentsObj := logs.NewLogContents(err.Error(), "ERROR",
-			s.StartTime, time.Now(),
-			fmt.Sprintf("%v", time.Now().Sub(s.StartTime)),
-			"", 0, s.Host, s.Port, s.BackupType)
-
-		logs.LogToMySQL(LogContentsObj, s.LogTable)
+		s.BackupFailConditionStage()
 		return err
 	}
 
@@ -64,14 +54,7 @@ func (s *BpServer) ServerBackupProcess() error {
 		s.SubDataPath = TarGetDirectory
 	} else {
 		logrus.Errorf("Error creating backup directory: %s\n", err)
-
-		LogContentsObj := logs.NewLogContents(err.Error(), "ERROR",
-			s.StartTime, time.Now(),
-			fmt.Sprintf("%v", time.Now().Sub(s.StartTime)),
-			"", 0, s.Host, s.Port, s.BackupType)
-
-		logs.LogToMySQL(LogContentsObj, s.LogTable)
-
+		s.BackupFailConditionStage()
 		return err
 	}
 
@@ -111,7 +94,7 @@ func (s *BpServer) ServerBackupProcess() error {
 	return nil
 }
 
-func (s *BpServer) ManuBackup() {
+func (s *BpServer) ManualBackup() {
 	err := s.ServerBackupProcess()
 	if err != nil {
 		logrus.Errorf("Error running backup: %s\n", err)
@@ -130,13 +113,22 @@ func (s *BpServer) ManageBackup() {
 		s.RemoveFiles()
 	}
 
+	LogContentsObj := logs.NewLogContents(err.Error(), s.BackupStatus,
+		s.StartTime, s.EndTime,
+		fmt.Sprintf("%v", s.EndTime.Sub(s.StartTime)),
+		s.SubDataPath, s.BackupSize, s.Host, s.Port, s.BackupType)
+
+	logs.LogToMySQL(LogContentsObj, s.LogTable)
+
 	FormatFileSize := utils.ByteHumanRead(s.BackupSize)
 	logDing := logs.LogContentDingTalk{
 		Token:        config.Conf.LogDingTalk.Token,
 		ProxyUrl:     config.Conf.LogDingTalk.ProxyUrl,
 		Secret:       config.Conf.LogDingTalk.Secret,
 		BusinessName: config.Conf.BpServer.BusinessName,
+		Instance:     s.HostName + "-" + s.Host + ":" + strconv.Itoa(s.Port),
 		StartTime:    s.StartTime,
+		CostTime:     fmt.Sprintf("%v", s.EndTime.Sub(s.StartTime)),
 		EndTime:      s.EndTime,
 		FileName:     s.SubDataPath,
 		FileSize:     FormatFileSize,
