@@ -97,7 +97,7 @@ func InitLog(BackupLog string) {
 		logrus.Fatalf("error opening log file: %v", err)
 	}
 
-	logrus.SetReportCaller(true)
+	//logrus.SetReportCaller(true)
 	logrus.SetLevel(logrus.InfoLevel)
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	logrus.SetOutput(io.MultiWriter(f))

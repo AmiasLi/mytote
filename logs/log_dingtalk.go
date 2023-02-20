@@ -25,8 +25,11 @@ type LogContentDingTalk struct {
 func (dt LogContentDingTalk) ResultToDingTalkGroup() error {
 	var MsgContent []string
 
+	fmt.Println("------------")
+	fmt.Println(dt.ProxyUrl)
+
 	if dt.ProxyUrl != "" {
-		err := os.Setenv("http_proxy", dt.ProxyUrl)
+		err := os.Setenv("https_proxy", dt.ProxyUrl)
 		if err != nil {
 			logrus.Errorf("Can not set Proxy[%s] url error: %v", dt.ProxyUrl, err)
 			return err
