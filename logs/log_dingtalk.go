@@ -1,4 +1,4 @@
-package main
+package logs
 
 import (
 	"fmt"
@@ -20,14 +20,14 @@ type LogContentDingTalk struct {
 	Status       bool
 }
 
-func (dt LogContentDingTalk) ResultToDingTalkGroup() {
+func (dt LogContentDingTalk) ResultToDingTalkGroup() error {
 	var MsgContent []string
 
 	if dt.ProxyUrl != "" {
 		err := os.Setenv("http_proxy", dt.ProxyUrl)
 		if err != nil {
 			logrus.Errorf("Can not set Proxy[%s] url error: %v", dt.ProxyUrl, err)
-			return
+			return err
 		}
 	}
 
@@ -53,25 +53,9 @@ func (dt LogContentDingTalk) ResultToDingTalkGroup() {
 
 	err := cli.SendMarkDownMessageBySlice(MsgTitle, MsgContent)
 	if err != nil {
-		logrus.Fatal(err)
+		logrus.Errorf("Send DingTalk message error: %v", err)
+		return err
 	}
 
-}
-
-func main() {
-	const DingTalkToken = "a6fa9bd1b631f2caf7ccbb76eff7db05d193c58f777cdda79913508c6a29a1f3"
-	const Secret = "SEC0a7cfe8ca36ab44d17a54ec6e8904235c90b33c52969ee8329a0735135c94198"
-	dt := LogContentDingTalk{
-		Token:        DingTalkToken,
-		ProxyUrl:     "http://192.168.55.208:1080",
-		BusinessName: "德安备份通知测试",
-		StartTime:    time.Now(),
-		EndTime:      time.Now(),
-		FileName:     "abc.sql",
-		FileSize:     "12G",
-		Status:       false,
-		Secret:       Secret,
-	}
-
-	dt.ResultToDingTalkGroup()
+	return nil
 }

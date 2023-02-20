@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"github.com/AmiasLi/mytote/config"
 	"strconv"
 	"time"
 
@@ -94,13 +95,42 @@ func (s *BpServer) ServerBackupProcess() error {
 	return nil
 }
 
-func (s *BpServer) ManageBackup() {
-	s.RemoveFiles()
+func (s *BpServer) ManuBackup() {
 	err := s.ServerBackupProcess()
 	if err != nil {
 		logrus.Errorf("Error running backup: %s\n", err)
 	} else {
 		logrus.Infof("Backup completed successfully.\n")
+		s.RemoveFiles()
+	}
+}
+
+func (s *BpServer) ManageBackup() {
+	err := s.ServerBackupProcess()
+	if err != nil {
+		logrus.Errorf("Error running backup: %s\n", err)
+	} else {
+		logrus.Infof("Backup completed successfully.\n")
+		s.RemoveFiles()
+	}
+
+	FormatFileSize := utils.ByteHumanRead(s.BackupSize)
+	logDing := logs.LogContentDingTalk{
+		Token:        config.Conf.LogDingTalk.Token,
+		ProxyUrl:     config.Conf.LogDingTalk.ProxyUrl,
+		Secret:       config.Conf.LogDingTalk.Secret,
+		BusinessName: config.Conf.BpServer.BusinessName,
+		StartTime:    s.StartTime,
+		EndTime:      s.EndTime,
+		FileName:     s.SubDataPath,
+		FileSize:     FormatFileSize,
+		Status:       s.BackupStatus,
+	}
+
+	err = logDing.ResultToDingTalkGroup()
+
+	if err != nil {
+		logrus.Errorf("Error sendding dingtalk message: %s\n", err)
 	}
 }
 
